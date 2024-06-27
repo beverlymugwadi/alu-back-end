@@ -1,44 +1,34 @@
 #!/usr/bin/python3
-import requests
-import sys
-
-def get_employee_todo_list(employee_id):
-    """
-    Retrieves and displays an employee's TODO list progress.
-
-    Args:
-        employee_id (int): The employee's ID.
-
-    Returns:
-        None
-    """
-    base_url = "https://jsonplaceholder.typicode.com"
-    user_url = f"{base_url}/users/{employee_id}"
-    todos_url = f"{base_url}/todos?userId={employee_id}"
-
-    try:
-        user_response = requests.get(user_url)
-        todos_response = requests.get(todos_url)
-        user_data = user_response.json()
-        todos_data = todos_response.json()
-
-        employee_name = user_data.get("name", "Unknown Employee")
-        total_tasks = len(todos_data)
-        done_tasks = sum(1 for task in todos_data if task.get("completed"))
-
-        print(f"Employee {employee_name} is done with tasks ({done_tasks}/{total_tasks}):")
-        for task in todos_data:
-            if task.get("completed"):
-                print(f"\t{task['title']}")
-
-    except requests.RequestException as e:
-        print(f"Error fetching data: {e}")
-        sys.exit(1)
-
+"""
+a Python script that, using REST API,
+returns information about employee TODO list progress.
+"""
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python todo_progress.py <employee_id>")
-        sys.exit(1)
+    import json
+    import sys
+    import urllib.request
 
-    employee_id = int(sys.argv[1])
-    get_employee_todo_list(employee_id)
+    """
+    format the employees id with the url
+    """
+    employee_id = sys.argv[1]
+    url1 = f"https://jsonplaceholder.typicode.com/users/{employee_id}/todos"
+    url2 = f"https://jsonplaceholder.typicode.com/users/{employee_id}/"
+    req_object1 = urllib.request.Request(url1, method="GET")
+    req_object2 = urllib.request.Request(url2, method="GET")
+    with urllib.request.urlopen(req_object1) as response_object1:
+        response1 = json.load(response_object1)
+    with urllib.request.urlopen(req_object2) as response_object2:
+        response2 = json.load(response_object2)
+    completed_tasks = []
+    for task in response1:
+        if task['completed'] is not True:
+            continue
+        completed_tasks.append(task)
+    no_of_comptasks = len(completed_tasks)
+    totalno_of_task = len(response1)
+    employee_name = response2["name"]
+    print(f"Employee {employee_name} is done with tasks({no_of_comptasks}/\
+{totalno_of_task}):")
+    for comp_tasks in completed_tasks:
+        print(f"\t {comp_tasks['title']}")
